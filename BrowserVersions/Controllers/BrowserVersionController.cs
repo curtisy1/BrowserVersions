@@ -1,6 +1,7 @@
 namespace BrowserVersions.Controllers {
   using System.Collections.Generic;
   using System.Threading.Tasks;
+  using BrowserVersions.Enums;
   using BrowserVersions.Services;
   using Microsoft.AspNetCore.Mvc;
   using Microsoft.Extensions.Logging;
@@ -16,13 +17,13 @@ namespace BrowserVersions.Controllers {
     }
     
     [HttpGet("")]
-    public async Task<IActionResult> Get(List<string> browsers) {
-      return this.Ok(await this.browserVersionService.GetBrowserVersion(browsers));
+    public async Task<IActionResult> Get(List<TargetBrowser> browsers, List<Platform> platforms) {
+      return this.Ok(await this.browserVersionService.GetBrowserVersion(browsers, platforms));
     }
     
     [HttpPost("")]
-    public async Task<IActionResult> Post([FromBody] List<string> browsers = null) {
-      return this.Ok(await this.browserVersionService.GetBrowserVersion(browsers ?? new List<string>()));
+    public async Task<IActionResult> Post(List<TargetBrowser> browsers, List<Platform> platforms) {
+      return this.Ok(await this.browserVersionService.GetBrowserVersion(browsers, platforms));
     }
   }
 }
