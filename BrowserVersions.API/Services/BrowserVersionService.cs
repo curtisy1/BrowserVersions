@@ -8,12 +8,14 @@ namespace BrowserVersions.API.Services {
   using BrowserVersions.API.Enums;
   using BrowserVersions.API.Models;
   using BrowserVersions.API.Models.Chrome;
+  using BrowserVersions.API.Models.Edge;
   using BrowserVersions.API.Models.Firefox;
   using Microsoft.Extensions.Logging;
 
   public class BrowserVersionService : IBrowserVersionService {
     private const string firefoxUri = "https://product-details.mozilla.org/1.0/{0}_versions.json"; // can be firefox or mobile
     private const string chromeUri = "https://omahaproxy.appspot.com/all.json";
+    private const string edgeUri = "https://www.microsoftedgeinsider.com/api/versions";
 
     private readonly HttpClient httpClient;
     private readonly ILogger<BrowserVersionService> logger;
@@ -81,7 +83,7 @@ namespace BrowserVersions.API.Services {
             _ => new VersionChannels()
           };
         case TargetBrowser.Edge:
-          return new VersionChannels();
+          return this.ConvertEdgeNamingToUseful(await this.GetVersionInternal<EdgeApiVersion>(edgeUri));
         default:
           return new VersionChannels();
       }
@@ -145,6 +147,15 @@ namespace BrowserVersions.API.Services {
         default:
           return new VersionChannels();
       }
+    }
+
+    private VersionChannels ConvertEdgeNamingToUseful(EdgeApiVersion model) {
+      return new() {
+        Beta = model.Beta,
+        Develop = model.Dev,
+        Nightly = model.Canary,
+        Stable = model.Stable,
+      };
     }
   }
 }
