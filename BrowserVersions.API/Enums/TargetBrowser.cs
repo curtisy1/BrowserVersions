@@ -1,4 +1,4 @@
-namespace BrowserVersions.Enums {
+namespace BrowserVersions.API.Enums {
   public enum TargetBrowser {
     Firefox,
     Chrome,

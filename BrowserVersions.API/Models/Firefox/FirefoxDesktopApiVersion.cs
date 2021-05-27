@@ -1,4 +1,4 @@
-namespace BrowserVersions.Models.Firefox {
+namespace BrowserVersions.API.Models.Firefox {
   using System;
 
   public class FirefoxDesktopApiVersion {

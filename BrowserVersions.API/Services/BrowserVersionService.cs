@@ -1,14 +1,14 @@
-namespace BrowserVersions.Services {
+namespace BrowserVersions.API.Services {
   using System;
   using System.Collections.Generic;
   using System.Linq;
   using System.Net.Http;
   using System.Net.Http.Json;
   using System.Threading.Tasks;
-  using BrowserVersions.Enums;
-  using BrowserVersions.Models;
-  using BrowserVersions.Models.Chrome;
-  using BrowserVersions.Models.Firefox;
+  using BrowserVersions.API.Enums;
+  using BrowserVersions.API.Models;
+  using BrowserVersions.API.Models.Chrome;
+  using BrowserVersions.API.Models.Firefox;
   using Microsoft.Extensions.Logging;
 
   public class BrowserVersionService : IBrowserVersionService {
@@ -74,6 +74,12 @@ namespace BrowserVersions.Services {
               return new VersionChannels();
           }
         case TargetBrowser.InternetExplorer:
+          return platform switch {
+            Platform.Desktop => new VersionChannels {
+              Stable = "11.0.220",
+            },
+            _ => new VersionChannels()
+          };
         case TargetBrowser.Edge:
           return new VersionChannels();
         default:

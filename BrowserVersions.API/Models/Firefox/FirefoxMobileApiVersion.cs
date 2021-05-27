@@ -1,4 +1,4 @@
-namespace BrowserVersions.Models.Firefox {
+namespace BrowserVersions.API.Models.Firefox {
   public class FirefoxMobileApiVersion {
     public string alpha_version	{ get; set; }
     

@@ -1,12 +1,12 @@
-namespace BrowserVersions.Controllers {
+namespace BrowserVersions.API.Controllers {
   using System.Collections.Generic;
   using System.Threading.Tasks;
-  using BrowserVersions.Enums;
-  using BrowserVersions.Services;
+  using BrowserVersions.API.Enums;
+  using BrowserVersions.API.Services;
   using Microsoft.AspNetCore.Mvc;
   using Microsoft.Extensions.Logging;
 
-  [Route("[controller]")]
+  [Route("")]
   public class BrowserVersionController : ControllerBase {
     private readonly IBrowserVersionService browserVersionService;
     private readonly ILogger<BrowserVersionController> logger;

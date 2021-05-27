@@ -1,4 +1,4 @@
-namespace BrowserVersions.Models {
+namespace BrowserVersions.API.Models {
   using Enums;
 
   public class RequestParameter {

@@ -1,4 +1,4 @@
-namespace BrowserVersions.Models {
+namespace BrowserVersions.API.Models {
   public class VersionChannels {
     public string Develop { get; set; }
     

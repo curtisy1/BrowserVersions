@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrowserVersions", "BrowserVersions\BrowserVersions.csproj", "{5715E5E9-1EBF-4C57-BAC9-5C6163195CAC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrowserVersions.API", "BrowserVersions.API\BrowserVersions.API.csproj", "{5715E5E9-1EBF-4C57-BAC9-5C6163195CAC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

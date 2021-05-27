@@ -1,11 +1,11 @@
-namespace BrowserVersions {
+namespace BrowserVersions.API {
+  using BrowserVersions.API.Services;
   using Microsoft.AspNetCore.Builder;
   using Microsoft.AspNetCore.Hosting;
   using Microsoft.Extensions.Configuration;
   using Microsoft.Extensions.DependencyInjection;
   using Microsoft.Extensions.Hosting;
   using Microsoft.OpenApi.Models;
-  using BrowserVersions.Services;
 
   public class Startup {
     public Startup(IConfiguration configuration) {
@@ -22,7 +22,7 @@ namespace BrowserVersions {
       services.AddControllers();
       services.AddSwaggerGen(c => {
         c.SwaggerDoc("v1", new OpenApiInfo {
-          Title = "BrowserVersions",
+          Title = "BrowserVersions.API",
           Version = "v1"
         });
       });
@@ -33,7 +33,7 @@ namespace BrowserVersions {
       if (env.IsDevelopment()) {
         app.UseDeveloperExceptionPage();
         app.UseSwagger();
-        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BrowserVersions v1"));
+        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BrowserVersions.API v1"));
       }
 
       app.UseHttpsRedirection();

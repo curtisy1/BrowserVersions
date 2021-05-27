@@ -1,4 +1,4 @@
-namespace BrowserVersions.Models.Chrome {
+namespace BrowserVersions.API.Models.Chrome {
   using System.Collections.Generic;
 
   public class ChromeApiModel {

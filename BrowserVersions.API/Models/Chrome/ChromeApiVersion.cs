@@ -1,4 +1,4 @@
-namespace BrowserVersions.Models.Chrome {
+namespace BrowserVersions.API.Models.Chrome {
 
   public class ChromeApiVersion {
     public string branch_commit { get; set; }
