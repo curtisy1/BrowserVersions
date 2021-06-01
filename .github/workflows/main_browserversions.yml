@@ -10,6 +10,9 @@ on:
 
 jobs:
   build-and-deploy:
+    environment:
+      name: Deploy BrowserVersions to Azure
+      url: ${{ steps.web_deploy.outputs.webapp-url }}
     runs-on: ubuntu-latest
 
     steps:
@@ -28,7 +31,7 @@ jobs:
       run: dotnet build --configuration Release
 
     - name: dotnet publish
-      run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp -r linux-x64 --self-contained true
+      run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp -r linux-x64
 
     - name: Run Azure webapp deploy action using publish profile credentials
       uses: azure/webapps-deploy@v2
