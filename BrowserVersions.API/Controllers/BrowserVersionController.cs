@@ -6,7 +6,7 @@ namespace BrowserVersions.API.Controllers {
   using Microsoft.AspNetCore.Mvc;
   using Microsoft.Extensions.Logging;
 
-  [Route("")]
+  [Route("v1")]
   public class BrowserVersionController : ControllerBase {
     private readonly IBrowserVersionService browserVersionService;
     private readonly ILogger<BrowserVersionController> logger;

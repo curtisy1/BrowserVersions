@@ -33,14 +33,16 @@ namespace BrowserVersions.API {
       if (env.IsDevelopment()) {
         app.UseDeveloperExceptionPage();
         app.UseSwagger();
-        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BrowserVersions.API v1"));
+        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BrowserVersions v1"));
       }
 
       app.UseHttpsRedirection();
 
       app.UseRouting();
 
-      app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+      app.UseEndpoints(endpoints => {
+        endpoints.MapControllers();
+      });
     }
   }
 }
