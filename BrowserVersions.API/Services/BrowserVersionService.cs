@@ -5,11 +5,11 @@ namespace BrowserVersions.API.Services {
   using System.Net.Http;
   using System.Net.Http.Json;
   using System.Threading.Tasks;
-  using BrowserVersions.API.Enums;
   using BrowserVersions.API.Models;
   using BrowserVersions.API.Models.Chrome;
   using BrowserVersions.API.Models.Edge;
   using BrowserVersions.API.Models.Firefox;
+  using BrowserVersions.Data.Enums;
   using Microsoft.Extensions.Logging;
 
   public class BrowserVersionService : IBrowserVersionService {

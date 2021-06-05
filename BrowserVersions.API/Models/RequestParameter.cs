@@ -1,5 +1,5 @@
 namespace BrowserVersions.API.Models {
-  using Enums;
+  using BrowserVersions.Data.Enums;
 
   public class RequestParameter {
     public TargetBrowser TargetBrowser { get; set; }

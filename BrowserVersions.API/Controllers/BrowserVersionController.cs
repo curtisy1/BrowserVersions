@@ -1,8 +1,8 @@
 namespace BrowserVersions.API.Controllers {
   using System.Collections.Generic;
   using System.Threading.Tasks;
-  using BrowserVersions.API.Enums;
   using BrowserVersions.API.Services;
+  using BrowserVersions.Data.Enums;
   using Microsoft.AspNetCore.Mvc;
   using Microsoft.Extensions.Logging;
 
