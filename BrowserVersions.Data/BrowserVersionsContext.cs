@@ -12,8 +12,6 @@ namespace BrowserVersions.Data {
       => options.UseSqlite(@"Data Source=browserVersions.db");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
-      base.OnModelCreating(modelBuilder);
-
       modelBuilder.Entity<Browser>().HasData(new List<Browser> {
         new() {
           BrowserId = 1,
@@ -66,6 +64,8 @@ namespace BrowserVersions.Data {
           Platform = Platform.Desktop,
         },
       });
+      
+      base.OnModelCreating(modelBuilder);
     }
   }
 }

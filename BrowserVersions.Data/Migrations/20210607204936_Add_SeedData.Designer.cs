@@ -3,14 +3,16 @@ using System;
 using BrowserVersions.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BrowserVersions.Data.Migrations
 {
     [DbContext(typeof(BrowserVersionsContext))]
-    partial class BrowserVersionsContextModelSnapshot : ModelSnapshot
+    [Migration("20210607204936_Add_SeedData")]
+    partial class Add_SeedData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -118,9 +120,6 @@ namespace BrowserVersions.Data.Migrations
 
                     b.Property<DateTime?>("EndOfSupportDate")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("ReleaseChannel")
-                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("ReleaseDate")
                         .HasColumnType("TEXT");

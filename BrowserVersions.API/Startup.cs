@@ -1,5 +1,6 @@
 namespace BrowserVersions.API {
   using BrowserVersions.API.Services;
+  using BrowserVersions.Data;
   using Microsoft.AspNetCore.Builder;
   using Microsoft.AspNetCore.Hosting;
   using Microsoft.Extensions.Configuration;
@@ -17,6 +18,7 @@ namespace BrowserVersions.API {
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services) {
       services.AddHttpClient();
+      services.AddDbContext<BrowserVersionsContext>();
       services.AddScoped<IBrowserVersionService, BrowserVersionService>();
       
       services.AddControllers();

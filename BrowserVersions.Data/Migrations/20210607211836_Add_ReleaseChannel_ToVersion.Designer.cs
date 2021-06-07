@@ -3,14 +3,16 @@ using System;
 using BrowserVersions.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BrowserVersions.Data.Migrations
 {
     [DbContext(typeof(BrowserVersionsContext))]
-    partial class BrowserVersionsContextModelSnapshot : ModelSnapshot
+    [Migration("20210607211836_Add_ReleaseChannel_ToVersion")]
+    partial class Add_ReleaseChannel_ToVersion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
