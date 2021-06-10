@@ -1,17 +1,25 @@
 namespace BrowserVersions.Data {
   using System.Collections.Generic;
+  using System.IO;
   using BrowserVersions.Data.Entities;
   using BrowserVersions.Data.Enums;
   using Microsoft.EntityFrameworkCore;
+  using Version = BrowserVersions.Data.Entities.Version;
 
   public class BrowserVersionsContext : DbContext {
     public DbSet<Version> Versions { get; set; }
     public DbSet<Browser> Browsers { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder options)
-      => options.UseSqlite(@"Data Source=browserVersions.db");
+    protected override void OnConfiguring(DbContextOptionsBuilder options) 
+      => options.UseSqlite($"Data Source={Directory.GetCurrentDirectory()}/../BrowserVersions.Data/browserVersions.db");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
+      AddBrowsers(modelBuilder);
+
+      base.OnModelCreating(modelBuilder);
+    }
+
+    private static void AddBrowsers(ModelBuilder modelBuilder) {
       modelBuilder.Entity<Browser>().HasData(new List<Browser> {
         new() {
           BrowserId = 1,
@@ -64,8 +72,6 @@ namespace BrowserVersions.Data {
           Platform = Platform.Desktop,
         },
       });
-      
-      base.OnModelCreating(modelBuilder);
     }
   }
 }
