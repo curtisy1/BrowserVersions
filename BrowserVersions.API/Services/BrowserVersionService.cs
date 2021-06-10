@@ -1,19 +1,15 @@
 namespace BrowserVersions.API.Services {
   using System;
   using System.Collections.Generic;
-  using System.Globalization;
-  using System.IO;
   using System.Linq;
   using System.Net.Http;
   using System.Net.Http.Json;
-  using System.Text.Json;
   using System.Threading.Tasks;
   using BrowserVersions.API.Models;
   using BrowserVersions.API.Models.Chrome;
   using BrowserVersions.API.Models.Edge;
   using BrowserVersions.API.Models.Firefox;
   using BrowserVersions.Data;
-  using BrowserVersions.Data.Entities;
   using BrowserVersions.Data.Enums;
   using Microsoft.EntityFrameworkCore;
   using Microsoft.Extensions.Logging;
@@ -69,91 +65,6 @@ namespace BrowserVersions.API.Services {
       }
 
       return browserVersions;
-    }
-
-    public async Task AddHistoricalData() {
-      var workingDir = Directory.GetCurrentDirectory();
-      var filePath = $"{workingDir}/../BrowserVersions.Data/firefoxreleases.json";
-      var firefoxVersions = await JsonSerializer.DeserializeAsync<FirefoxHistoricalDataWrapper>(File.OpenRead(filePath));
-      if (!(firefoxVersions?.releases?.Any() ?? true)) {
-        return;
-      }
-
-      var existingBrowsers = await this.browserVersionDbContext.Browsers.Where(b => b.Type == TargetBrowser.Firefox).ToListAsync();
-      var versionsToInsert = new List<Version>();
-      foreach (var (flavor, flavorVersions) in firefoxVersions.releases) {
-        var targetPlatforms = new List<Platform>();
-        if (flavor is "fennec" or "fenix") {
-          targetPlatforms.AddRange(new [] { Platform.Android , Platform.Ios});
-        } else {
-          targetPlatforms.Add(Platform.Desktop);
-        }
-
-        foreach (var version in flavorVersions) {
-          if (!versionsToInsert.Any(v => v.VersionCode == version.version && v.Browsers.Any(b => targetPlatforms.Contains(b.Platform)))) {
-            versionsToInsert.Add(this.FirefoxReleaseToVersion(version, existingBrowsers.Where(b => targetPlatforms.Contains(b.Platform)).ToList()));
-          }
-        }
-      }
-      
-      filePath = $"{workingDir}/../BrowserVersions.Data/nightlyreleases.json";
-      var nightlyVersions = await JsonSerializer.DeserializeAsync<FirefoxNightlyDataWrapper>(File.OpenRead(filePath));
-      if (!(nightlyVersions?.builds?.Any() ?? true)) {
-        return;
-      }
-
-      foreach (var nightlyVersion in nightlyVersions.builds) {
-        if (!versionsToInsert.Any(v => v.VersionCode == nightlyVersion.app_version && v.ReleaseChannel == ReleaseChannel.Nightly)) {
-          versionsToInsert.Add(this.NightlyReleaseToVersion(nightlyVersion, existingBrowsers.ToList()));
-        }
-      }
-
-      await this.browserVersionDbContext.Versions.AddRangeAsync(versionsToInsert);
-      await this.browserVersionDbContext.SaveChangesAsync();
-    }
-    
-    private Version NightlyReleaseToVersion(FirefoxNightlyData release, IList<Browser> existingBrowsers) {
-      var platform = release.platform switch {
-        "win32" => Platform.Desktop,
-        "win64" => Platform.Desktop,
-        "linux32" => Platform.Desktop,
-        "linux64" => Platform.Desktop,
-        "mac" => Platform.Desktop,
-        "mac_arm64" => Platform.Desktop,
-        "webview" => Platform.Desktop,
-        "ios" => Platform.Ios,
-        "android" => Platform.Android,
-        _ => throw new ArgumentException("No platform detected that would match")
-      };
-
-      var hasDate = DateTime.TryParseExact(release.buildid, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var releaseDate);
-      if (!hasDate) {
-        throw new ArgumentException("No valid date");
-      }
-      
-      return new Version {
-        Browsers = existingBrowsers.Where(b => b.Platform == platform).ToList(),
-        ReleaseChannel = ReleaseChannel.Nightly,
-        ReleaseDate = releaseDate,
-        VersionCode = release.app_version,
-      };
-    }
-
-    private Version FirefoxReleaseToVersion(FirefoxHistoricalData release, List<Browser> existingBrowsers) {
-      var channel = release.category switch {
-        "dev" => ReleaseChannel.Beta,
-        "major" => ReleaseChannel.Stable,
-        "stability" => ReleaseChannel.Stable,
-        "esr" => ReleaseChannel.Esr,
-        _ => throw new ArgumentException("No version detected that would match")
-      };
-
-      return new Version {
-        Browsers = existingBrowsers,
-        ReleaseChannel = channel,
-        ReleaseDate = release.date,
-        VersionCode = release.version,
-      };
     }
 
     private Task<List<Version>> GetSavedBrowserVersions(DateTime? startingFrom, DateTime? untilIncluding) {
