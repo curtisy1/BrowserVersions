@@ -30,8 +30,8 @@ namespace BrowserVersions.API.Services {
       this.logger = logger;
     }
 
-    public async Task<Dictionary<TargetBrowser, Dictionary<Platform, VersionChannels>>> GetBrowserVersion(List<TargetBrowser> targetBrowsers, List<Platform> targetPlatforms, DateTime? releasesFrom, DateTime? releasesTo) {
-      var savedBrowserVersionsTask = this.GetSavedBrowserVersions(releasesFrom, releasesTo);
+    public async Task<Dictionary<TargetBrowser, Dictionary<Platform, VersionChannels>>> GetBrowserVersion(List<TargetBrowser> targetBrowsers, List<Platform> targetPlatforms, DateTime? releasesFrom, DateTime? releasesTo, DateTime? supportedUntil) {
+      var savedBrowserVersionsTask = this.GetSavedBrowserVersions(releasesFrom, releasesTo, supportedUntil);
       var browserVersions = new Dictionary<TargetBrowser, Dictionary<Platform, VersionChannels>>();
       var browsers = targetBrowsers;
       var platforms = targetPlatforms;
@@ -67,8 +67,8 @@ namespace BrowserVersions.API.Services {
       return browserVersions;
     }
 
-    private Task<List<Version>> GetSavedBrowserVersions(DateTime? startingFrom, DateTime? untilIncluding) {
-      return this.browserVersionDbContext.Versions.Where(v => v.ReleaseDate >= startingFrom && v.ReleaseDate <= untilIncluding)
+    private Task<List<Version>> GetSavedBrowserVersions(DateTime? startingFrom, DateTime? untilIncluding, DateTime? supportedUntil) {
+      return this.browserVersionDbContext.Versions.Where(v => (v.ReleaseDate >= startingFrom && v.ReleaseDate <= untilIncluding) || v.EndOfSupportDate == supportedUntil)
         .Include(v => v.Browsers)
         .ToListAsync();
     }
