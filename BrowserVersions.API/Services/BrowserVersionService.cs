@@ -70,6 +70,7 @@ namespace BrowserVersions.API.Services {
     private Task<List<Version>> GetSavedBrowserVersions(DateTime? startingFrom, DateTime? untilIncluding, DateTime? supportedUntil) {
       return this.browserVersionDbContext.Versions.Where(v => (v.ReleaseDate >= startingFrom && v.ReleaseDate <= untilIncluding) || v.EndOfSupportDate == supportedUntil)
         .Include(v => v.Browsers)
+        .OrderByDescending(v => v.ReleaseDate)
         .ToListAsync();
     }
 
