@@ -20,6 +20,7 @@ namespace BrowserVersions.API {
       services.AddHttpClient();
       services.AddDbContext<BrowserVersionsContext>();
       services.AddScoped<IBrowserVersionService, BrowserVersionService>();
+      services.AddScoped<IBrowserVersionSeedingService, BrowserVersionSeedingService>();
       
       services.AddControllers();
       services.AddSwaggerGen(c => {
