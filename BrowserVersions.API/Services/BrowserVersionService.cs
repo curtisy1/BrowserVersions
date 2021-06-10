@@ -1,9 +1,11 @@
 namespace BrowserVersions.API.Services {
   using System;
   using System.Collections.Generic;
+  using System.IO;
   using System.Linq;
   using System.Net.Http;
   using System.Net.Http.Json;
+  using System.Text.Json;
   using System.Threading.Tasks;
   using BrowserVersions.API.Models;
   using BrowserVersions.API.Models.Chrome;
@@ -36,7 +38,7 @@ namespace BrowserVersions.API.Services {
       var browserVersions = new Dictionary<TargetBrowser, Dictionary<Platform, VersionChannels>>();
       var browsers = targetBrowsers;
       var platforms = targetPlatforms;
-      
+
       if (!browsers.Any()) {
         platforms = new List<Platform> {
           Platform.Android,
@@ -66,6 +68,58 @@ namespace BrowserVersions.API.Services {
       }
 
       return browserVersions;
+    }
+
+    public async Task AddHistoricalData() {
+      var workingDir = Directory.GetCurrentDirectory();
+      var filePath = $"{workingDir}/../BrowserVersions.Data/chromereleases.json";
+      var chromeVersions = await JsonSerializer.DeserializeAsync<ChromeHistoricalDataWrapper>(File.OpenRead(filePath));
+      if (!(chromeVersions?.releases?.Any() ?? true)) {
+        return;
+      }
+
+      var existingBrowsers = await this.browserVersionDbContext.Browsers.Where(b => b.Type == TargetBrowser.Chrome).ToListAsync();
+      var versionsToInsert = new List<Version>(chromeVersions.releases.Count());
+      foreach (var release in chromeVersions.releases) {
+        if (!versionsToInsert.Any(v => v.VersionCode == release.version)) {
+          versionsToInsert.Add(this.ChromeReleaseToVersion(release, existingBrowsers));
+        }
+      }
+
+      await this.browserVersionDbContext.Versions.AddRangeAsync(versionsToInsert);
+      await this.browserVersionDbContext.SaveChangesAsync();
+    }
+
+    private Version ChromeReleaseToVersion(ChromeHistoricalData release, IList<Browser> existingBrowsers) {
+      var platformAndChannelInformation = release.name.Split("/");
+      var platform = platformAndChannelInformation[2] switch {
+        "win" => Platform.Desktop,
+        "win64" => Platform.Desktop,
+        "lacros" => Platform.Desktop,
+        "linux" => Platform.Desktop,
+        "mac" => Platform.Desktop,
+        "mac_arm64" => Platform.Desktop,
+        "webview" => Platform.Desktop,
+        "ios" => Platform.Ios,
+        "android" => Platform.Android,
+        _ => throw new ArgumentException("No platform detected that would match")
+      };
+
+      var channel = platformAndChannelInformation[4] switch {
+        "canary" => ReleaseChannel.Nightly,
+        "dev" => ReleaseChannel.Develop,
+        "beta" => ReleaseChannel.Beta,
+        "stable" => ReleaseChannel.Stable,
+        _ => throw new ArgumentException("No version detected that would match")
+      };
+
+      return new Version {
+        Browsers = existingBrowsers.Where(b => b.Platform == platform).ToList(),
+        ReleaseChannel = channel,
+        ReleaseDate = release.serving.startTime,
+        EndOfSupportDate = release.serving.endTime,
+        VersionCode = release.version,
+      };
     }
 
     private Task<List<Version>> GetSavedBrowserVersions(DateTime? startingFrom, DateTime? untilIncluding) {

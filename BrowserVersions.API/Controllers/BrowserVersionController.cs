@@ -26,5 +26,11 @@ namespace BrowserVersions.API.Controllers {
     public async Task<IActionResult> Post(List<TargetBrowser> browsers, List<Platform> platforms, DateTime? minSupportDate = null, DateTime? maxSupportDate = null) {
       return this.Ok(await this.browserVersionService.GetBrowserVersion(browsers, platforms, minSupportDate, maxSupportDate));
     }
+
+    [HttpGet("history")]
+    public async Task<IActionResult> History() {
+      await this.browserVersionService.AddHistoricalData();
+      return this.Ok();
+    }
   }
 }

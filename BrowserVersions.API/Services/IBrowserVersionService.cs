@@ -7,5 +7,7 @@ namespace BrowserVersions.API.Services {
 
   public interface IBrowserVersionService {
     Task<Dictionary<TargetBrowser, Dictionary<Platform, VersionChannels>>> GetBrowserVersion(List<TargetBrowser> targetBrowsers, List<Platform> targetPlatforms, DateTime? minSupportDate, DateTime? maxSupportDate);
+
+    Task AddHistoricalData();
   }
 }
