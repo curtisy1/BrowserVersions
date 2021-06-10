@@ -30,8 +30,8 @@ namespace BrowserVersions.API.Services {
       this.logger = logger;
     }
 
-    public async Task<Dictionary<TargetBrowser, Dictionary<Platform, VersionChannels>>> GetBrowserVersion(List<TargetBrowser> targetBrowsers, List<Platform> targetPlatforms, DateTime? minSupportDate, DateTime? maxSupportDate) {
-      var savedBrowserVersionsTask = this.GetSavedBrowserVersions(minSupportDate, maxSupportDate);
+    public async Task<Dictionary<TargetBrowser, Dictionary<Platform, VersionChannels>>> GetBrowserVersion(List<TargetBrowser> targetBrowsers, List<Platform> targetPlatforms, DateTime? releasesFrom, DateTime? releasesTo) {
+      var savedBrowserVersionsTask = this.GetSavedBrowserVersions(releasesFrom, releasesTo);
       var browserVersions = new Dictionary<TargetBrowser, Dictionary<Platform, VersionChannels>>();
       var browsers = targetBrowsers;
       var platforms = targetPlatforms;

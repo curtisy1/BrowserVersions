@@ -18,13 +18,13 @@ namespace BrowserVersions.API.Controllers {
     }
     
     [HttpGet("")]
-    public async Task<IActionResult> Get(List<TargetBrowser> browsers, List<Platform> platforms, DateTime? minSupportDate = null, DateTime? maxSupportDate = null) {
-      return this.Ok(await this.browserVersionService.GetBrowserVersion(browsers, platforms, minSupportDate, maxSupportDate));
+    public async Task<IActionResult> Get(List<TargetBrowser> browsers, List<Platform> platforms, DateTime? releasesFrom = null, DateTime? releasesTo = null) {
+      return this.Ok(await this.browserVersionService.GetBrowserVersion(browsers, platforms, releasesFrom, releasesTo));
     }
     
     [HttpPost("")]
-    public async Task<IActionResult> Post(List<TargetBrowser> browsers, List<Platform> platforms, DateTime? minSupportDate = null, DateTime? maxSupportDate = null) {
-      return this.Ok(await this.browserVersionService.GetBrowserVersion(browsers, platforms, minSupportDate, maxSupportDate));
+    public async Task<IActionResult> Post(List<TargetBrowser> browsers, List<Platform> platforms, DateTime? releasesFrom = null, DateTime? releasesTo = null) {
+      return this.Ok(await this.browserVersionService.GetBrowserVersion(browsers, platforms, releasesFrom, releasesTo));
     }
   }
 }
