@@ -30,18 +30,14 @@ namespace BrowserVersions.API.Services {
       this.logger = logger;
     }
 
-    public async Task<Dictionary<TargetBrowser, Dictionary<Platform, VersionChannels>>> GetBrowserVersion(List<TargetBrowser> targetBrowsers, List<Platform> targetPlatforms, DateTime? releasesFrom, DateTime? releasesTo, DateTime? supportedUntil) {
+    public async Task<Dictionary<TargetBrowser, Dictionary<Platform, Dictionary<ReleaseChannel, VersionModel>>>> GetBrowserVersion(List<TargetBrowser> targetBrowsers, List<Platform> targetPlatforms, List<ReleaseChannel> targetChannels, DateTime? releasesFrom, DateTime? releasesTo, DateTime? supportedUntil) {
       var savedBrowserVersionsTask = this.GetSavedBrowserVersions(releasesFrom, releasesTo, supportedUntil);
-      var browserVersions = new Dictionary<TargetBrowser, Dictionary<Platform, VersionChannels>>();
+      var browserVersions = new Dictionary<TargetBrowser, Dictionary<Platform, Dictionary<ReleaseChannel, VersionModel>>>();
       var browsers = targetBrowsers;
       var platforms = targetPlatforms;
+      var channels = targetChannels;
 
       if (!browsers.Any()) {
-        platforms = new List<Platform> {
-          Platform.Android,
-          Platform.Desktop,
-          Platform.Ios,
-        };
         browsers = new List<TargetBrowser> {
           TargetBrowser.Firefox,
           TargetBrowser.Chrome,
@@ -50,16 +46,47 @@ namespace BrowserVersions.API.Services {
         };
       }
 
+      if (!platforms.Any()) {
+        platforms = new List<Platform> {
+          Platform.Android,
+          Platform.Desktop,
+          Platform.Ios,
+        };
+      }
+
+      if (!channels.Any()) {
+        channels = new List<ReleaseChannel> {
+          ReleaseChannel.Nightly,
+          ReleaseChannel.Beta,
+          ReleaseChannel.Develop,
+          ReleaseChannel.Stable,
+          ReleaseChannel.Esr,
+        };
+      }
+
       var savedBrowserVersions = await savedBrowserVersionsTask;
       foreach (var browser in browsers) {
-        browserVersions[browser] = new Dictionary<Platform, VersionChannels>();
+        browserVersions[browser] = new Dictionary<Platform, Dictionary<ReleaseChannel, VersionModel>>();
+        
         foreach (var platform in platforms) {
-          var savedBrowserVersion = savedBrowserVersions.FirstOrDefault(bv => bv.Browsers.Any(b => b.Platform == platform && b.Type == browser));
-          if (savedBrowserVersion != null) {
-            browserVersions[browser][platform] = AssignDatabaseVersionToChannel(savedBrowserVersion);
-          } else {
-            browserVersions[browser][platform] = await this.FetchAndAssignVersionFromApi(browser, platform);
-            // TODO: Insert into database here? Would have the benefit of saving a sync but the risk of duplicates if 2 of the same requests run at once
+          browserVersions[browser][platform] = new Dictionary<ReleaseChannel, VersionModel>();
+          
+          foreach (var channel in channels) {
+            var savedBrowserVersion = savedBrowserVersions.FirstOrDefault(bv => bv.ReleaseChannel == channel && bv.Browsers.Any(b => b.Platform == platform && b.Type == browser));
+            if (savedBrowserVersion != null) {
+              browserVersions[browser][platform][channel] = new VersionModel {
+                Version = savedBrowserVersion.VersionCode,
+                ReleaseDate = savedBrowserVersion.ReleaseDate,
+              };
+            }
+          }
+
+          var missingBrowserVersions = channels.Where(c => !browserVersions[browser][platform].ContainsKey(c)).ToList();
+          if (missingBrowserVersions.Any()) {
+            var apiBrowserVersions = await this.FetchAndAssignVersionFromApi(browser, platform, missingBrowserVersions);
+            foreach (var (channel, versionModel) in apiBrowserVersions) {
+              browserVersions[browser][platform][channel] = versionModel;
+            }
           }
         }
       }
@@ -74,43 +101,56 @@ namespace BrowserVersions.API.Services {
         .ToListAsync();
     }
 
-    private static VersionChannels AssignDatabaseVersionToChannel(Version version) {
-      return version.ReleaseChannel switch {
-        ReleaseChannel.Beta => new VersionChannels { Beta = version.VersionCode },
-        ReleaseChannel.Nightly => new VersionChannels { Nightly = version.VersionCode },
-        ReleaseChannel.Develop => new VersionChannels { Develop = version.VersionCode },
-        ReleaseChannel.Stable => new VersionChannels { Stable = version.VersionCode },
-        ReleaseChannel.Esr => new VersionChannels { Esr = version.VersionCode },
-        _ => new VersionChannels()
-      };
-    }
-
-    private async Task<VersionChannels> FetchAndAssignVersionFromApi(TargetBrowser targetBrowser, Platform platform) {
+    private async Task<Dictionary<ReleaseChannel, VersionModel>> FetchAndAssignVersionFromApi(TargetBrowser targetBrowser, Platform platform, List<ReleaseChannel> channels) {
+      var versionsPerChannel = new Dictionary<ReleaseChannel, VersionModel>(channels.Count);
+      var versionChannels = new VersionChannels();
       switch (targetBrowser) {
         case TargetBrowser.Firefox:
           switch (platform) {
             case Platform.Desktop:
-              return ConvertFirefoxDesktopNamingToUseful(await this.GetVersionInternal<FirefoxDesktopApiVersion>(firefoxUri.Replace("{0}", "firefox")));
+              versionChannels = ConvertFirefoxDesktopNamingToUseful(await this.GetVersionInternal<FirefoxDesktopApiVersion>(firefoxUri.Replace("{0}", "firefox")));
+              break;
             case Platform.Android:
             case Platform.Ios:
-              return ConvertFirefoxMobileNamingToUseful(await this.GetVersionInternal<FirefoxMobileApiVersion>(firefoxUri.Replace("{0}", "mobile")), platform);
+              versionChannels = ConvertFirefoxMobileNamingToUseful(await this.GetVersionInternal<FirefoxMobileApiVersion>(firefoxUri.Replace("{0}", "mobile")), platform);
+              break;
             default:
-              return new VersionChannels();
+              return versionsPerChannel;
           }
+
+          break;
         case TargetBrowser.Chrome:
-          return ConvertChromeNamingToUseful(await this.GetVersionInternal<List<ChromeApiModel>>(chromeUri), platform);
+          versionChannels = ConvertChromeNamingToUseful(await this.GetVersionInternal<List<ChromeApiModel>>(chromeUri), platform);
+          break;
         case TargetBrowser.InternetExplorer:
-          return platform switch {
+          versionChannels = platform switch {
             Platform.Desktop => new VersionChannels {
+              Esr = "11.0.220",
               Stable = "11.0.220",
             },
             _ => new VersionChannels()
           };
+          break;
         case TargetBrowser.Edge:
-          return ConvertEdgeNamingToUseful(await this.GetVersionInternal<EdgeApiVersion>(edgeUri));
+          versionChannels = ConvertEdgeNamingToUseful(await this.GetVersionInternal<EdgeApiVersion>(edgeUri));
+          break;
         default:
-          return new VersionChannels();
+          return versionsPerChannel;
       }
+
+      foreach (var channel in channels) {
+        versionsPerChannel[channel] = new VersionModel { Version = channel switch {
+            ReleaseChannel.Beta => versionChannels.Beta,
+            ReleaseChannel.Esr => versionChannels.Esr,
+            ReleaseChannel.Develop => versionChannels.Develop,
+            ReleaseChannel.Nightly => versionChannels.Nightly,
+            ReleaseChannel.Stable => versionChannels.Stable,
+            _ => throw new ArgumentOutOfRangeException(nameof(channels), "Channel does not match any given type")
+          }
+        };
+      }
+
+      return versionsPerChannel;
     }
 
     private async Task<T> GetVersionInternal<T>(string uriString) {

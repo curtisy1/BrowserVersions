@@ -6,6 +6,6 @@ namespace BrowserVersions.API.Services {
   using BrowserVersions.Data.Enums;
 
   public interface IBrowserVersionService {
-    Task<Dictionary<TargetBrowser, Dictionary<Platform, VersionChannels>>> GetBrowserVersion(List<TargetBrowser> targetBrowsers, List<Platform> targetPlatforms, DateTime? releasesFrom, DateTime? releasesTo, DateTime? supportedUntil);
+    Task<Dictionary<TargetBrowser, Dictionary<Platform, Dictionary<ReleaseChannel, VersionModel>>>> GetBrowserVersion(List<TargetBrowser> targetBrowsers, List<Platform> targetPlatforms, List<ReleaseChannel> targetChannels, DateTime? releasesFrom, DateTime? releasesTo, DateTime? supportedUntil);
   }
 }
