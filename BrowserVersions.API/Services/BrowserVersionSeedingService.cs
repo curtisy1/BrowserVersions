@@ -55,10 +55,8 @@ namespace BrowserVersions.API.Services {
       var esrVersions = versionsToInsert.Where(v => v.ReleaseChannel == ReleaseChannel.Esr).ToList();
       for (var i = 1; i < esrVersions.Count; i++) {
         // Might not be accurate since this is the minimal supported time before EOL
-        versionsToInsert[versionsToInsert.IndexOf(esrVersions[i - 1])].EndOfSupportDate = versionsToInsert[versionsToInsert.IndexOf(esrVersions[i])].ReleaseDate.AddMonths(15);
+        versionsToInsert[versionsToInsert.IndexOf(esrVersions[i - 1])].EndOfSupportDate = versionsToInsert[versionsToInsert.IndexOf(esrVersions[i])].ReleaseDate?.AddMonths(15);
       }
-
-      var modifiedEsr = versionsToInsert.Where(v => v.ReleaseChannel == ReleaseChannel.Esr).ToList();
 
       filePath = $"{workingDir}/../BrowserVersions.Data/nightlyreleases.json";
       var nightlyVersions = await JsonSerializer.DeserializeAsync<FirefoxNightlyDataWrapper>(File.OpenRead(filePath));

@@ -12,7 +12,9 @@ namespace BrowserVersions.Data.Entities {
     
     public string VersionCode { get; set; }
     
-    public DateTime ReleaseDate { get; set; }
+    // TODO: This should really not be optional.
+    // Unfortunately it's not that easy to get the release date from the available APIs. Maybe write some scraper?
+    public DateTime? ReleaseDate { get; set; }
     
     public DateTime? EndOfSupportDate { get; set; }
     
