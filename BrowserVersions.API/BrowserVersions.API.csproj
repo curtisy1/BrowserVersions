@@ -5,7 +5,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Quartz.AspNetCore" Version="3.3.2" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\BrowserVersions.Data\BrowserVersions.Data.csproj" />
     </ItemGroup>
 
 </Project>

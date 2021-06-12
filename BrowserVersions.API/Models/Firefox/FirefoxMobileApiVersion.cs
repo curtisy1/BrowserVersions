@@ -1,5 +1,5 @@
 namespace BrowserVersions.API.Models.Firefox {
-  public class FirefoxMobileApiVersion {
+  public class FirefoxMobileApiVersion : ApiVersion {
     public string alpha_version	{ get; set; }
     
     public string beta_version	{ get; set; }

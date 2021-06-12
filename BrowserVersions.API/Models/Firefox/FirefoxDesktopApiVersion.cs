@@ -1,7 +1,7 @@
 namespace BrowserVersions.API.Models.Firefox {
   using System;
 
-  public class FirefoxDesktopApiVersion {
+  public class FirefoxDesktopApiVersion : ApiVersion {
     public string FIREFOX_AURORA { get; set; }
     
     public string FIREFOX_DEVEDITION { get; set; }
