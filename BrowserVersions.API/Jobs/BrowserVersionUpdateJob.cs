@@ -59,9 +59,16 @@ namespace BrowserVersions.API.Jobs {
        .ToListAsync();
       var versionsToAdd = new List<Version>(browsers.Count * channels.Count * platforms.Count);
 
+      var versionList = new List<ApiVersion> {
+        await this.GetVersionInternal<FirefoxDesktopApiVersion>(VersionUrl.firefoxUri.Replace("{0}", "firefox")),
+        await this.GetVersionInternal<FirefoxMobileApiVersion>(VersionUrl.firefoxUri.Replace("{0}", "mobile")),
+        await this.GetVersionInternal<EdgeApiVersion>(VersionUrl.edgeUri),
+      };
+      versionList.AddRange(await this.GetVersionInternal<List<ChromeApiModel>>(VersionUrl.chromeUri));
+      
       foreach (var browser in browsers) {
         foreach (var platform in platforms) {
-          var apiBrowserVersions = await this.FetchAndAssignVersionFromApi(browser, platform, channels);
+          var apiBrowserVersions = FetchAndAssignVersionFromApi(browser, platform, channels, versionList);
           foreach (var (channel, versionModel) in apiBrowserVersions) {
             if (!existingVersions.Any(v => v.ReleaseChannel == channel && v.VersionCode == versionModel.Version && v.Browsers.Any(b => b.Platform == platform && b.Type == browser))) {
               versionsToAdd.AddRange(apiBrowserVersions.Where(x => !string.IsNullOrEmpty(x.Value.Version)).Select(x => new Version {
@@ -79,18 +86,18 @@ namespace BrowserVersions.API.Jobs {
       await this.browserVersionsContext.SaveChangesAsync();
     }
 
-    private async Task<Dictionary<ReleaseChannel, VersionModel>> FetchAndAssignVersionFromApi(TargetBrowser targetBrowser, Platform platform, List<ReleaseChannel> channels) {
+    private static Dictionary<ReleaseChannel, VersionModel> FetchAndAssignVersionFromApi(TargetBrowser targetBrowser, Platform platform, List<ReleaseChannel> channels, IEnumerable<ApiVersion> apiVersions) {
       var versionsPerChannel = new Dictionary<ReleaseChannel, VersionModel>(channels.Count);
       VersionChannels versionChannels;
       switch (targetBrowser) {
         case TargetBrowser.Firefox:
           switch (platform) {
             case Platform.Desktop:
-              versionChannels = ConvertFirefoxDesktopNamingToUseful(await this.GetVersionInternal<FirefoxDesktopApiVersion>(VersionUrl.firefoxUri.Replace("{0}", "firefox")));
+              versionChannels = ConvertFirefoxDesktopNamingToUseful(apiVersions.OfType<FirefoxDesktopApiVersion>().First());
               break;
             case Platform.Android:
             case Platform.Ios:
-              versionChannels = ConvertFirefoxMobileNamingToUseful(await this.GetVersionInternal<FirefoxMobileApiVersion>(VersionUrl.firefoxUri.Replace("{0}", "mobile")), platform);
+              versionChannels = ConvertFirefoxMobileNamingToUseful(apiVersions.OfType<FirefoxMobileApiVersion>().First(), platform);
               break;
             default:
               return versionsPerChannel;
@@ -98,7 +105,7 @@ namespace BrowserVersions.API.Jobs {
 
           break;
         case TargetBrowser.Chrome:
-          versionChannels = ConvertChromeNamingToUseful(await this.GetVersionInternal<List<ChromeApiModel>>(VersionUrl.chromeUri), platform);
+          versionChannels = ConvertChromeNamingToUseful(apiVersions.OfType<ChromeApiModel>().ToList(), platform);
           break;
         case TargetBrowser.InternetExplorer:
           versionChannels = platform switch {
@@ -110,7 +117,7 @@ namespace BrowserVersions.API.Jobs {
           };
           break;
         case TargetBrowser.Edge:
-          versionChannels = ConvertEdgeNamingToUseful(await this.GetVersionInternal<EdgeApiVersion>(VersionUrl.edgeUri));
+          versionChannels = ConvertEdgeNamingToUseful(apiVersions.OfType<EdgeApiVersion>().First());
           break;
         default:
           return versionsPerChannel;
@@ -161,7 +168,7 @@ namespace BrowserVersions.API.Jobs {
       };
     }
 
-    private static VersionChannels ConvertChromeNamingToUseful(List<ChromeApiModel> models, Platform platform) {
+    private static VersionChannels ConvertChromeNamingToUseful(IEnumerable<ChromeApiModel> models, Platform platform) {
       switch (platform) {
         case Platform.Android:
           var androidModel = models.FirstOrDefault(m => m.os == "android");
