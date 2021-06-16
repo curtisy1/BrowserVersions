@@ -11,16 +11,13 @@ namespace BrowserVersions.API.Services {
   using BrowserVersions.Data.Entities;
   using BrowserVersions.Data.Enums;
   using Microsoft.EntityFrameworkCore;
-  using Microsoft.Extensions.Logging;
   using Version = BrowserVersions.Data.Entities.Version;
 
   public class BrowserVersionSeedingService : IBrowserVersionSeedingService {
     private readonly BrowserVersionsContext browserVersionsContext;
-    private readonly ILogger<BrowserVersionSeedingService> logger;
 
-    public BrowserVersionSeedingService(BrowserVersionsContext browserVersionsContext, ILogger<BrowserVersionSeedingService> logger) {
+    public BrowserVersionSeedingService(BrowserVersionsContext browserVersionsContext) {
       this.browserVersionsContext = browserVersionsContext;
-      this.logger = logger;
     }
 
     public async Task SeedBrowserData() {
