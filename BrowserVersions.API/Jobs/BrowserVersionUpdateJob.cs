@@ -29,7 +29,7 @@ namespace BrowserVersions.API.Jobs {
     }
 
     public async Task Execute(IJobExecutionContext context) {
-      this.logger.LogInformation("Background job running");
+      this.logger.LogDebug("Background job running");
       await this.GetLatestVersionsFromApis();
     }
 
@@ -71,6 +71,8 @@ namespace BrowserVersions.API.Jobs {
           var apiBrowserVersions = FetchAndAssignVersionFromApi(browser, platform, channels, versionList);
           foreach (var (channel, versionModel) in apiBrowserVersions) {
             if (!existingVersions.Any(v => v.ReleaseChannel == channel && v.VersionCode == versionModel.Version && v.Browsers.Any(b => b.Platform == platform && b.Type == browser))) {
+              this.logger.LogDebug("Found new version for browser {0} on platform {1} with release channel {2}: {3}", browser, platform, channel, versionModel.Version);
+              
               versionsToAdd.AddRange(apiBrowserVersions.Where(x => !string.IsNullOrEmpty(x.Value.Version)).Select(x => new Version {
                 Browsers = browserEntities.Where(b => b.Type == browser && b.Platform == platform).ToList(),
                 ReleaseChannel = channel,
@@ -82,6 +84,8 @@ namespace BrowserVersions.API.Jobs {
         }
       }
 
+      this.logger.LogDebug("Adding {0} new versions to database", versionsToAdd.Count);
+      
       this.browserVersionsContext.Versions.AddRange(versionsToAdd);
       await this.browserVersionsContext.SaveChangesAsync();
     }
@@ -140,6 +144,8 @@ namespace BrowserVersions.API.Jobs {
     }
 
     private async Task<T> GetVersionInternal<T>(string uriString) {
+      this.logger.LogDebug("Requesting newest browser versions from {0}", uriString);
+      
       var response = await this.httpClient.GetAsync(new Uri(uriString));
       return await response.Content.ReadFromJsonAsync<T>();
     }

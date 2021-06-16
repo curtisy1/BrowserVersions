@@ -44,7 +44,7 @@ namespace BrowserVersions.API {
         q.ScheduleJob<BrowserVersionUpdateJob>(trigger => trigger
           .WithIdentity("Data Update Trigger")
           .StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(7)))
-          .WithDailyTimeIntervalSchedule(x => x.WithInterval(60, IntervalUnit.Second))
+          .WithDailyTimeIntervalSchedule(x => x.WithInterval(12, IntervalUnit.Hour))
           .WithDescription("Job that fetches the latest versions from all apis and inserts new data to the database")
         );
       });

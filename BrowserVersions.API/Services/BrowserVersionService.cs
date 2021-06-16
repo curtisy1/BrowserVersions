@@ -20,7 +20,6 @@ namespace BrowserVersions.API.Services {
     }
 
     public async Task<Dictionary<TargetBrowser, Dictionary<Platform, Dictionary<ReleaseChannel, VersionModel>>>> GetBrowserVersion(List<TargetBrowser> targetBrowsers, List<Platform> targetPlatforms, List<ReleaseChannel> targetChannels, DateTime? releasesFrom, DateTime? releasesTo, DateTime? supportedUntil) {
-      var savedBrowserVersionsTask = this.GetSavedBrowserVersions(releasesFrom, releasesTo, supportedUntil);
       var browserVersions = new Dictionary<TargetBrowser, Dictionary<Platform, Dictionary<ReleaseChannel, VersionModel>>>();
       var browsers = targetBrowsers;
       var platforms = targetPlatforms;
@@ -53,13 +52,13 @@ namespace BrowserVersions.API.Services {
         };
       }
 
-      var savedBrowserVersions = await savedBrowserVersionsTask;
+      var savedBrowserVersions = await this.GetSavedBrowserVersions(browsers, platforms, channels, releasesFrom, releasesTo, supportedUntil);
       foreach (var browser in browsers) {
         browserVersions[browser] = new Dictionary<Platform, Dictionary<ReleaseChannel, VersionModel>>();
-        
+
         foreach (var platform in platforms) {
           browserVersions[browser][platform] = new Dictionary<ReleaseChannel, VersionModel>();
-          
+
           foreach (var channel in channels) {
             var savedBrowserVersion = savedBrowserVersions.FirstOrDefault(bv => bv.ReleaseChannel == channel && bv.Browsers.Any(b => b.Platform == platform && b.Type == browser));
             if (savedBrowserVersion != null) {
@@ -75,8 +74,13 @@ namespace BrowserVersions.API.Services {
       return browserVersions;
     }
 
-    private Task<List<Version>> GetSavedBrowserVersions(DateTime? startingFrom, DateTime? untilIncluding, DateTime? supportedUntil) {
-      return this.browserVersionDbContext.Versions.Where(v => (v.ReleaseDate >= startingFrom && v.ReleaseDate <= untilIncluding) || v.EndOfSupportDate == supportedUntil)
+    private Task<List<Version>> GetSavedBrowserVersions(ICollection<TargetBrowser> browsers, ICollection<Platform> platforms, ICollection<ReleaseChannel> channels, DateTime? startingFrom, DateTime? untilIncluding, DateTime? supportedUntil) {
+      this.logger.LogInformation("Getting saved browser versions startingFrom: {0}, untilIncluding: {1}, supportedUntil: {2}", startingFrom, untilIncluding, supportedUntil);
+
+      return this.browserVersionDbContext.Versions.Where(v =>
+           v.Browsers.Any(b => browsers.Contains(b.Type) && platforms.Contains(b.Platform))
+           && channels.Contains(v.ReleaseChannel)
+           && ((v.ReleaseDate >= startingFrom && v.ReleaseDate <= untilIncluding) || v.EndOfSupportDate == supportedUntil))
         .Include(v => v.Browsers)
         .OrderByDescending(v => v.ReleaseDate)
         .ToListAsync();
