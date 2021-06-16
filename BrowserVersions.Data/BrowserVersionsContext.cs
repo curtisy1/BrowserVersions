@@ -4,14 +4,22 @@ namespace BrowserVersions.Data {
   using BrowserVersions.Data.Entities;
   using BrowserVersions.Data.Enums;
   using Microsoft.EntityFrameworkCore;
+  using Microsoft.Extensions.Logging;
   using Version = BrowserVersions.Data.Entities.Version;
 
   public class BrowserVersionsContext : DbContext {
     public DbSet<Version> Versions { get; set; }
     public DbSet<Browser> Browsers { get; set; }
 
+    private readonly ILoggerFactory loggerFactory;
+    
+    public BrowserVersionsContext(ILoggerFactory loggerFactory) {
+      this.loggerFactory = loggerFactory;
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder options) 
-      => options.UseSqlite($"Data Source={Directory.GetCurrentDirectory()}/../BrowserVersions.Data/browserVersions.db");
+      => options.UseSqlite($"Data Source={Directory.GetCurrentDirectory()}/../BrowserVersions.Data/browserVersions.db")
+        .UseLoggerFactory(this.loggerFactory);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
       AddBrowsers(modelBuilder);
