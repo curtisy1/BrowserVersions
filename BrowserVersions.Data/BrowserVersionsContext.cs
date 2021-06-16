@@ -12,13 +12,19 @@ namespace BrowserVersions.Data {
     public DbSet<Browser> Browsers { get; set; }
 
     private readonly ILoggerFactory loggerFactory;
+    private readonly string databasePath;
     
     public BrowserVersionsContext(ILoggerFactory loggerFactory) {
       this.loggerFactory = loggerFactory;
+#if DEBUG
+      this.databasePath = $"{Directory.GetCurrentDirectory()}/../BrowserVersions.Data/";
+#else
+      this.databasePath = "";
+#endif
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options) 
-      => options.UseSqlite($"Data Source={Directory.GetCurrentDirectory()}/../BrowserVersions.Data/browserVersions.db")
+      => options.UseSqlite($"Data Source={this.databasePath}browserVersions.db")
         .UseLoggerFactory(this.loggerFactory);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
